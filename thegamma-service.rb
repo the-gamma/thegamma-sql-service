@@ -1,3 +1,5 @@
+require 'json'
+
 require 'cuba'
 require 'cuba/safe'
 
@@ -21,7 +23,13 @@ TYPE_MAP = {
 }
 
 def table_metadata(table_name)
-
+  ActiveRecord::Base.connection.columns(table_name).reduce({}) { |h, c|
+    t = TYPE_MAP[c.type.to_s]
+    unless t.nil?
+      h[c.name] = t
+    end
+    h
+  }
 end
 
 Cuba.define do
@@ -34,11 +42,7 @@ Cuba.define do
 
       return if tbl.nil?
 
-      res.write ActiveRecord::Base.connection.columns(tbl).map { |c|
-        [c.name, c.type.to_s]
-      }.inspect
-
-
+      res.write table_metadata(tbl).to_json
     end
 
   end
