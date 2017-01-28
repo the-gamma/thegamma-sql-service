@@ -10,19 +10,19 @@ require './thegamma-service-parser.rb'
 
 
 ActiveRecord::Base.establish_connection(
-  adapter: "postgresql",
-  encoding: "unicode",
-  database: "data",
-  username: "manuel",
+  adapter: "sqlite3",
+  database: File.join(File.dirname(__FILE__), 'db', 'medals.db')
 )
 
 TYPE_MAP = {
   'integer' => 'number',
-  'string' => 'string'
+  'string' => 'string',
+  'text' => 'string'
 }
 
 def table_metadata(table_name)
   ActiveRecord::Base.connection.columns(table_name).reduce({}) { |h, c|
+    puts c.type.to_s
     t = TYPE_MAP[c.type.to_s]
     unless t.nil?
       h[c.name] = t
@@ -43,9 +43,6 @@ Cuba.define do
       qp = Parser.parse_qs(env['QUERY_STRING'])
 
       arel_tbl = Arel::Table.new(tbl.intern)
-
-      puts arel_tbl.inspect
-      puts qp[:action].first.inspect
 
       action, args = qp[:action]
 
