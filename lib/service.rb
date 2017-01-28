@@ -7,13 +7,13 @@ require 'cuba/safe'
 require 'active_record'
 require 'activerecord-jdbc-adapter'
 
-require './thegamma-service-parser.rb'
-require './thegamma-service-interpreter.rb'
+require_relative './parser'
+require_relative './interpreter'
 
 
 ActiveRecord::Base.establish_connection(
   adapter: "sqlite3",
-  database: File.join(File.dirname(__FILE__), 'db', 'medals.db')
+  database: File.join(File.dirname(__FILE__), '..', 'db', 'medals.db')
 )
 
 TYPE_MAP = {

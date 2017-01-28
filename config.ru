@@ -1,3 +1,3 @@
-require './thegamma-service'
+require './lib/service.rb'
 
 run Cuba

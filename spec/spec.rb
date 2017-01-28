@@ -1,8 +1,8 @@
 require 'active_record'
 require 'activerecord-jdbc-adapter'
 
-require './thegamma-service-parser.rb'
-require './thegamma-service-interpreter.rb'
+require_relative '../lib/parser.rb'
+require_relative '../lib/interpreter.rb'
 
 describe "Parser" do
 
@@ -45,7 +45,7 @@ describe "Interpreter" do
   before (:all) do
     ActiveRecord::Base.establish_connection(
       adapter: "sqlite3",
-      database: File.join(File.dirname(__FILE__), 'db', 'medals.db')
+      database: File.join(File.dirname(__FILE__), '..', 'db', 'medals.db')
     )
     @table = Arel::Table.new(:medals)
   end
