@@ -1,6 +1,6 @@
 module Interpreter
 
-  def self.transform_data(table, transformations)
+  def self.query(table, transformations)
     query = transformations.reduce(table) do |query, transformation|
       tr, args = transformation
       case tr

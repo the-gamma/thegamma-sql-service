@@ -42,18 +42,24 @@ end
 
 describe "Interpreter" do
 
-  it "should generate a SQL query" do
-
+  before (:all) do
     ActiveRecord::Base.establish_connection(
       adapter: "sqlite3",
       database: File.join(File.dirname(__FILE__), 'db', 'medals.db')
     )
+    @table = Arel::Table.new(:medals)
+  end
 
+  it "should generate a SQL query" do
     parsed = Parser.parse_qs("filter(Games eq Rio (2016))$groupby(by Athlete,count-all,sum Gold,key)$sort(Gold desc)$take(8)$series(Athlete,Gold)")
+    expect(Interpreter.query(@table, parsed[:transformations]).to_sql).to eq("SELECT  COUNT(*) AS count, SUM(\"medals\".\"Gold\") AS Gold, \"medals\".\"Athlete\" FROM \"medals\"  WHERE \"medals\".\"Games\" = 'Rio (2016)' GROUP BY \"medals\".\"Athlete\" ORDER BY Gold desc LIMIT 8")
 
-    table = Arel::Table.new(:medals)
+    parsed = Parser.parse_qs("groupby(by Athlete,count-all,sum Gold,key)$sort(Gold desc)$take(8)$series(Athlete,Gold)")
+    puts parsed.inspect
+    expected = "SELECT  COUNT(*) AS count, SUM(\"medals\".\"Gold\") AS Gold, \"medals\".\"Athlete\" FROM \"medals\"  GROUP BY \"medals\".\"Athlete\" ORDER BY Gold desc LIMIT 8"
+    query = Interpreter.query(@table, parsed[:transformations]).to_sql
 
-    puts Interpreter.transform_data(table, parsed[:transformations]).to_sql
+    expect(query).to eq(expected)
 
   end
 end

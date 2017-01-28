@@ -1,4 +1,5 @@
 require 'json'
+require 'uri'
 
 require 'cuba'
 require 'cuba/safe'
@@ -7,6 +8,7 @@ require 'active_record'
 require 'activerecord-jdbc-adapter'
 
 require './thegamma-service-parser.rb'
+require './thegamma-service-interpreter.rb'
 
 
 ActiveRecord::Base.establish_connection(
@@ -38,9 +40,9 @@ Cuba.define do
 
     on ":table" do |table|
       tbl = ActiveRecord::Base.connection.tables
-        .find { |t| t == table }
+              .find { |t| t == table }
 
-      qp = Parser.parse_qs(env['QUERY_STRING'])
+      qp = Parser.parse_qs(URI.unescape(env['QUERY_STRING']))
 
       arel_tbl = Arel::Table.new(tbl.intern)
 
@@ -57,8 +59,11 @@ Cuba.define do
         res.write ActiveRecord::Base.connection.execute(q.to_sql)
                     .map { |r| r[col] }
                     .to_json
-      when :series
-        raise "NotImplemented"
+      when :get_series
+        q = Interpreter.query(arel_tbl,
+                              qp[:transformations])
+        puts "Executing query: `#{q.to_sql}`"
+        res.write ActiveRecord::Base.connection.execute(q.to_sql).to_json
       when :get_the_data
         raise "NotImplemented"
       end
