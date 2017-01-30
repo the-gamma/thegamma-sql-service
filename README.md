@@ -9,7 +9,7 @@ Get [JRuby](http://jruby.org).
 - `bundle`
 - `JRUBY_OPTS="-G" rackup`
 
-(Work in progress)
+By default, the service connects to an example SQLite database which contains the [olympic medals dataset](https://github.com/the-gamma/thegamma-services/blob/master/data/medals-expanded.csv) used in the examples. It should also work with any database supported by [ActiveRecord JDBC](https://github.com/jruby/activerecord-jdbc-adapter).
 
 ## License
 

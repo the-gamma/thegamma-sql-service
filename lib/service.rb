@@ -24,7 +24,6 @@ TYPE_MAP = {
 
 def table_metadata(table_name)
   ActiveRecord::Base.connection.columns(table_name).reduce({}) { |h, c|
-    puts c.type.to_s
     t = TYPE_MAP[c.type.to_s]
     unless t.nil?
       h[c.name] = t
@@ -48,25 +47,32 @@ Cuba.define do
 
       action, args = qp[:action]
 
-      case action
-      when :metadata
-        res.write table_metadata(tbl).to_json
-      when :get_range
-        col = args.first
-        q = arel_tbl.project(arel_tbl[col])
-        q.distinct # .distinct doesn't seem to be chainable :(
+      res['Content-Type'] = 'application/json'
 
-        res.write ActiveRecord::Base.connection.execute(q.to_sql)
-                    .map { |r| r[col] }
-                    .to_json
-      when :get_series
-        q = Interpreter.query(arel_tbl,
-                              qp[:transformations])
-        puts "Executing query: `#{q.to_sql}`"
-        res.write ActiveRecord::Base.connection.execute(q.to_sql).to_json
-      when :get_the_data
-        raise "NotImplemented"
-      end
+      resp = case action
+             when :metadata
+               table_metadata(tbl).to_json
+             when :get_range
+               col = args.first
+               q = arel_tbl.project(arel_tbl[col])
+               q.distinct # .distinct doesn't seem to be chainable :(
+
+               ActiveRecord::Base.connection.execute(q.to_sql)
+                 .map { |r| r[col] }
+                 .to_json
+             when :get_series
+               puts "get series #{args.inspect}"
+               q = Interpreter.query(arel_tbl,
+                                     qp[:transformations])
+               puts "Executing query: `#{q.to_sql}`"
+               ActiveRecord::Base.connection.execute(q.to_sql).map { |r|
+                 args.map { |col| r[col] }
+               }.to_json
+             when :get_the_data
+               raise "NotImplemented"
+             end
+
+      res.write resp
     end
   end
 end

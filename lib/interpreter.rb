@@ -21,9 +21,7 @@ module Interpreter
       when :group_by
         groups, aggs = args
 
-        query.group(groups.map { |g| table[g.intern] })
-
-        aggs.reduce(query) do |query, agg|
+        aggs.reduce(query.group(groups.map { |g| table[g.intern] })) do |query, agg|
           if agg.is_a?(Array)
             aggfunc, aggarg = agg
             case aggfunc
