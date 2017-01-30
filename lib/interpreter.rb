@@ -28,9 +28,9 @@ module Interpreter
             when :count_distinct
               query.project(Arel.sql("COUNT(DISTINCT #{aggarg}) as #{aggarg}"))
             when :unique
-              raise
+              raise "TODO: unique not implemented"
             when :concat_vals
-              raise
+              raise "TODO: concat-vals not implemented"
             when :sum
               query.project(table[agg[1].intern].sum.as(agg[1]))
             when :mean

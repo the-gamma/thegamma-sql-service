@@ -41,7 +41,6 @@ module Parser
     case op
     when "metadata"
       [[:metadata], true]
-
     when "series"
       [[:get_series, args], true]
     when "range"
