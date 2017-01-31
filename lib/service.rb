@@ -22,6 +22,8 @@ TYPE_MAP = {
   'text' => 'string'
 }
 
+PREVIEW_SIZE = 10
+
 def table_metadata(table_name)
   ActiveRecord::Base.connection.columns(table_name).reduce({}) { |h, c|
     t = TYPE_MAP[c.type.to_s]
@@ -41,7 +43,9 @@ Cuba.define do
       tbl = ActiveRecord::Base.connection.tables
               .find { |t| t == table }
 
-      qp = Parser.parse_qs(URI.unescape(env['QUERY_STRING']))
+      qs = URI.unescape(env['QUERY_STRING'])
+      qp = Parser.parse_qs(qs)
+      is_preview =  qs.end_with?('&preview')
 
       arel_tbl = Arel::Table.new(tbl.intern)
 
@@ -61,15 +65,28 @@ Cuba.define do
                  .map { |r| r[col] }
                  .to_json
              when :get_series
-               puts "get series #{args.inspect}"
                q = Interpreter.query(arel_tbl,
                                      qp[:transformations])
+               if is_preview
+                 q = q.take(PREVIEW_SIZE)
+               end
+
                puts "Executing query: `#{q.to_sql}`"
                ActiveRecord::Base.connection.execute(q.to_sql).map { |r|
                  args.map { |col| r[col] }
                }.to_json
+
              when :get_the_data
-               raise "NotImplemented"
+               q = Interpreter.query(arel_tbl,
+                                     qp[:transformations])
+
+               if is_preview
+                 q = q.take(PREVIEW_SIZE)
+               end
+
+               puts "Executing query: `#{q.to_sql}`"
+               ActiveRecord::Base.connection.execute(q.to_sql).to_json
+
              end
 
       res.write resp

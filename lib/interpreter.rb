@@ -50,8 +50,14 @@ module Interpreter
         end
       else
         # TODO implement
-        query
+        query.project(Arel.star)
       end
     end
+
+    if query.projections.empty?
+      query = query.project(Arel.star)
+    end
+
+    query
   end
 end
