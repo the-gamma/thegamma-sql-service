@@ -43,6 +43,12 @@ Cuba.define do
       tbl = ActiveRecord::Base.connection.tables
               .find { |t| t == table }
 
+      if tbl.nil?
+        res.status = 404
+        res.write("Table #{table} not found")
+        halt(res.finish)
+      end
+
       qs = URI.unescape(env['QUERY_STRING'])
       qp = Parser.parse_qs(qs)
       is_preview =  qs.end_with?('&preview')
