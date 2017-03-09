@@ -8,3 +8,5 @@ gem 'puma'
 gem 'rack-cors', :require => 'rack/cors'
 gem 'rspec', :group => :development
 gem 'pry', :group => :development
+gem 'jdbc-mssql-azure'
+gem 'activerecord-jdbcmssql-adapter'

@@ -12,14 +12,23 @@ require_relative './interpreter'
 
 
 ActiveRecord::Base.establish_connection(
-  adapter: "sqlite3",
-  database: File.join(File.dirname(__FILE__), '..', 'db', 'medals.db')
+# SQL Lite:
+#  adapter: "sqlite3",
+#  database: File.join(File.dirname(__FILE__), '..', 'db', 'medals.db')
+
+  driver: 'com.microsoft.sqlserver.jdbc.SQLServerDriver',
+  adapter: "sqlserver",
+  host: "thegamma-sql-data.database.windows.net",
+  database: "thegamma-sql-data",
+  username: "<secret>",
+  password: "<secret>"
 )
 
 TYPE_MAP = {
   'integer' => 'number',
   'string' => 'string',
-  'text' => 'string'
+  'text' => 'string',
+  '' => 'string'  # 'c.type.to_s' returns empty string for VARCHAR(100) and for GUIDs... 
 }
 
 PREVIEW_SIZE = 10
@@ -67,6 +76,7 @@ Cuba.define do
              when :get_series
                q = Interpreter.query(arel_tbl,
                                      qp[:transformations])
+
                if is_preview
                  q = q.take(PREVIEW_SIZE)
                end

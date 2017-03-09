@@ -34,7 +34,10 @@ module Interpreter
             when :sum
               query.project(table[agg[1].intern].sum.as(agg[1]))
             when :mean
-              query.project(table[agg[1].intern].avg.as(agg[1]))
+              # The following does not seem to work on MSSQL:
+              #   query.project(table[agg[1].intern].avg.as(agg[1]))
+              # But the following does the trick:
+              query.project(Arel.sql("AVG(#{aggarg}) as #{aggarg}"))
             end
           else
             case agg
