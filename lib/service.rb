@@ -10,6 +10,7 @@ require 'activerecord-jdbc-adapter'
 require_relative './parser'
 require_relative './interpreter'
 
+require 'sqljdbc4.jar'
 
 ActiveRecord::Base.establish_connection(
 # SQL Lite:
@@ -17,11 +18,11 @@ ActiveRecord::Base.establish_connection(
 #  database: File.join(File.dirname(__FILE__), '..', 'db', 'medals.db')
 
   driver: 'com.microsoft.sqlserver.jdbc.SQLServerDriver',
-  adapter: "sqlserver",
+  adapter: "jdbc",
   host: "thegamma-sql-data.database.windows.net",
-  database: "thegamma-sql-data",
   username: "<secret>",
   password: "<secret>"
+  url: 'jdbc:sqlserver://thegamma-sql-data.database.windows.net:1433;databaseName=thegamma-sql-data',
 )
 
 TYPE_MAP = {
@@ -51,6 +52,12 @@ Cuba.define do
     on ":table" do |table|
       tbl = ActiveRecord::Base.connection.tables
               .find { |t| t == table }
+
+      if tbl.nil?
+        res.status = 404
+        res.write("Table #{table} not found")
+        halt(res.finish)
+      end
 
       qs = URI.unescape(env['QUERY_STRING'])
       qp = Parser.parse_qs(qs)
